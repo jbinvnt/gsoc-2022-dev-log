@@ -29,3 +29,8 @@
 
 * Finalized my [dev environment](https://github.com/jbinvnt/openscad-docker-vscode) to use VS Code and Docker
 * Revisited my proposal to gather questions about beginning feature work
+
+### Late Month
+
+* Coding period begins
+* Prepared for my substitutions to the codebase by [investigating](RenderingInvestigation.md) the current state of rendering procedures in OpenSCAD.

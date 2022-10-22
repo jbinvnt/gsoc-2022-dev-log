@@ -41,14 +41,14 @@ These shaders were [previously proposed](https://github.com/openscad/openscad/pu
 
 ### Modernized Render Process
 
-`CGALRenderer` is the class used for F6 Rendering. It now uses VBOs instead of fixed-function immediate mode calls. This was accomplished by converting the generated polyhedrons to polysets, and adapting the methods used in `OpenCSGRenderer` to render them.
+`CGALRenderer` is the class used for F6 Rendering. When the `ExperimentalVxO...` features are enabled, it now uses VBOs instead of fixed-function immediate mode calls. This was accomplished by converting the generated polyhedrons to polysets, and adapting the methods used in `OpenCSGRenderer` to render them.
 
 ### Dynamically Activate Selected Shaders
 
-The signal from the menu item is connected to Qt slot in the main window. This immediately updates the shader in use by the viewport. There will be [future work](#future-work) in this area to provide consistent behavior when closing/opening OpenSCAD or files within it.
+The signal from the Set Shader menu item is connected to Qt slot in [`MainWindow.cc`](https://github.com/openscad/openscad/pull/4330/files#diff-3c6fac7fb9baebba855852b736a38cbfdbe9fbe5fdcb855fe6c147d93753cd6c). This immediately updates the shader in use by the viewport. There will be [future work](#future-work) in this area to provide consistent behavior when closing/opening the OpenSCAD application or files within it.
 
 ### Retreived Marked Face Data
-The boolean `hfaceti->marked` is collected from CGAL and converted into a vertex attribute. The default shader's inputs are constructed to appropriately render cut faces with a different color. Due to the OpenGL specification a `bool` attribute cannot be used so the marked face information is accessed as a `float`. For example, as used in the default shader:
+The boolean `hfaceti->marked` is collected from CGAL and assigned to the corresponding face so it can later be stored as a vertex attribute. The default shader's inputs are constructed to appropriately render cut faces with a different color. Due to the OpenGL specification a `bool` attribute cannot be used so the marked face information is accessed as a `float`. For example, as used in the default shader:
 
 ```glsl
 if (marked < 0.5) {
@@ -60,7 +60,7 @@ if (marked < 0.5) {
 
 ### Control Whether Edges Are Drawn
 
-The default shader was edited to allow user control of whether edges are drawn. Similarly to the marked face data, an `int` uniform must be used to transmit this data because the OpenGL version in use does not currently appear to support the `bool` type.
+The default shader was edited to allow user control of whether edges are drawn. An `int` uniform must be used to transmit this data because the OpenGL version in use does not currently appear to support the `bool` type.
 
 ```glsl
 float edgeFactor() {
@@ -81,7 +81,7 @@ A popup window is shown if a user-specified shader fails to compile. A message w
 
 ## Testing
 
-Bugs and inconsistencies have been fixed so that this pull request passes the full test suite for OpenSCAD.
+Bugs and inconsistencies have been fixed so that this pull request passes the CI test suite for OpenSCAD.
 
 In order to support all VBO functions when rendering with shaders, the test configuration now enables all of the following experimental options:
 
@@ -95,6 +95,8 @@ Previously only the first of those options was enabled in the test suite.
 ## Challenges Encountered
 
 There was a significant ramp-up period in which I needed to familiarize myself with the abstractions already in the codebase for producing and interacting with wrapper classes around data structures for rendering. My notes and exploration during this period could possibly be useful for future work on in-depth documentation of these procedures.
+
+OpenGL is inherently challenging to debug. One of the first steps in fixing issues I encountered was attempting to determine if the source of the error was in the host C++ code or the shaders executed on-device. In some instances my initial determination was wrong, which further slowed development.
 
 Additionally, grasping the interplay between the set of experimental features in development was a prerequisite for refining my changes to pass the automated test suite in the CI pipeline. The implementation of certain constructs may need to evolve as more features are moved from experimental to stable.
 
